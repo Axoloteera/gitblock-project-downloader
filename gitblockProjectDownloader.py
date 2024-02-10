@@ -5,6 +5,7 @@
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from urllib.request import Request, urlopen
+from urllib.parse import unquote
 import json
 import os
 import zipfile
@@ -20,12 +21,23 @@ def aes_decrypt(bytesText: bytes) -> str:
                  AES.block_size, style='pkcs7').decode('utf-8')
 
 
-def download_json(id: int, ver: int, https: bool = True) -> str:
+def download_json(id: int, ver: int = 0, https: bool = True) -> str:
     """获取最新作品/未发布作品需要令ver = 0"""
     return aes_decrypt(urlopen(
         Request(
             f"http{'s' if https else ''}://asset.gitblock.cn/Project/download?id={id}{'&v=' + str(ver) if ver != 0 else ''}",
             headers=headers)).read())
+
+
+def download_prj_fulldata(id: int, ver: int = 0, https: bool = True) -> dict:
+    """获取最新作品/未发布作品需要令ver = 0"""
+    req = urlopen(Request(
+        f"http{'s' if https else ''}://asset.gitblock.cn/Project/download?id={id}{'&v=' + str(ver) if ver != 0 else ''}",
+        headers=headers))
+    return {
+        "json": aes_decrypt(req.read()),
+        "title": unquote(req.getheader("content-disposition")[29:])
+    }
 
 
 def download_assets(prjJson: str, path: str = "./assets", https: bool = True) -> list:
@@ -76,8 +88,11 @@ def download_assets_memory(prjJson: str, https: bool = True) -> dict:
     return assets
 
 
-def download_sb3(id: int, ver: int, fileName: str = "project.sb3", https: bool = True) -> None:
-    prjJson = download_json(id, ver, https)
+def download_sb3(id: int, ver: int = 0, fileName: str = "project.sb3", https: bool = True) -> None:
+    prjData = download_prj_fulldata(id, ver, https)
+    prjJson = prjData["json"]
+    if fileName == "AUTO":
+        fileName = f"{id} - {prjData['title']}.sb3"
     assets = download_assets_memory(prjJson, https=https)
     with zipfile.ZipFile(fileName, mode="w") as archive:
         for i in assets:
