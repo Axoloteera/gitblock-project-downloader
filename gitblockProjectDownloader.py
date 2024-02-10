@@ -21,9 +21,11 @@ def aes_decrypt(bytesText: bytes) -> str:
 
 
 def download_json(id: int, ver: int, https: bool = True) -> str:
+    """获取最新作品/未发布作品需要令ver = 0"""
     return aes_decrypt(urlopen(
-        Request(f"http{'s' if https else ''}://asset.gitblock.cn/Project/download?id={id}&v={ver}",
-                headers=headers)).read())
+        Request(
+            f"http{'s' if https else ''}://asset.gitblock.cn/Project/download?id={id}{'&v=' + str(ver) if ver != 0 else ''}",
+            headers=headers)).read())
 
 
 def download_assets(prjJson: str, path: str = "./assets", https: bool = True) -> list:
