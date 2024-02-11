@@ -96,7 +96,7 @@ def download_assets_memory(prjJson: str, https: bool = True) -> dict:
 def download_sb3(id: int, ver: int = 0, fileName: str = "AUTO", https: bool = True) -> None:
     prjData = download_prj_fulldata(id, ver, https)
     prjJson = prjData["json"]
-    if "AUTO" in fileName:
+    if fileName == "AUTO":
         fileName = f"{id} - {prjData['title']}.sb3"
     assets = download_assets_memory(prjJson, https=https)
     with zipfile.ZipFile(fileName, mode="w") as archive:
