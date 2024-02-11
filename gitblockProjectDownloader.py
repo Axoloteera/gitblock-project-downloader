@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Author : Gtd232
 
@@ -11,7 +10,13 @@ import os
 import zipfile
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    "Accept": "*/*", "Accept-Encoding": "gzip, deflate, br", "Accept-Language": "zh-CN,zh;q=0.9",
+    "Connection": "keep-alive", "Host": "asset.gitblock.cn", "Origin": "https://gitblock.cn",
+    "Referer": "https://gitblock.cn/",
+    "Sec-Ch-Ua": '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+    "Sec-Ch-Ua-Mobile": "?0", "Sec-Ch-Ua-Platform": '"Windows"', "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors", "Sec-Fetch-Site": "same-site",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 }
 
 
@@ -51,7 +56,7 @@ def download_assets(prjJson: str, path: str = "./assets", https: bool = True) ->
             with open(f"{path}/{asset['md5ext']}", 'wb') as f:
                 try:
                     f.write(urlopen(
-                        Request(f"http{'s' if https else ''}://cdn.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
+                        Request(f"http{'s' if https else ''}://asset.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
                                 headers=headers)).read())
                 except:
                     raise 'Download Error!'
@@ -60,7 +65,7 @@ def download_assets(prjJson: str, path: str = "./assets", https: bool = True) ->
             with open(f"{path}/{asset['md5ext']}", 'wb') as f:
                 try:
                     f.write(urlopen(
-                        Request(f"http{'s' if https else ''}://cdn.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
+                        Request(f"http{'s' if https else ''}://asset.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
                                 headers=headers)).read())
                 except:
                     raise 'Download Error!'
@@ -74,24 +79,24 @@ def download_assets_memory(prjJson: str, https: bool = True) -> dict:
         for asset in sprite['costumes']:
             try:
                 assets[asset['md5ext']] = urlopen(
-                    Request(f"http{'s' if https else ''}://cdn.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
+                    Request(f"http{'s' if https else ''}://asset.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
                             headers=headers)).read()
             except:
                 raise 'Download Error!'
         for asset in sprite['sounds']:
             try:
                 assets[asset['md5ext']] = urlopen(
-                    Request(f"http{'s' if https else ''}://cdn.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
+                    Request(f"http{'s' if https else ''}://asset.gitblock.cn/Project/GetAsset?name={asset['md5ext']}",
                             headers=headers)).read()
             except:
                 raise 'Download Error!'
     return assets
 
 
-def download_sb3(id: int, ver: int = 0, fileName: str = "project.sb3", https: bool = True) -> None:
+def download_sb3(id: int, ver: int = 0, fileName: str = "AUTO", https: bool = True) -> None:
     prjData = download_prj_fulldata(id, ver, https)
     prjJson = prjData["json"]
-    if fileName == "AUTO":
+    if "AUTO" in fileName:
         fileName = f"{id} - {prjData['title']}.sb3"
     assets = download_assets_memory(prjJson, https=https)
     with zipfile.ZipFile(fileName, mode="w") as archive:
